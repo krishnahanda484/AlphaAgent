@@ -8,8 +8,8 @@
 
 ## Live Demo
 
-- **Application:** https://your-deployment-url.onrender.com
-- **GitHub Repository:** https://github.com/your-username/your-repository
+- **Application:** https://alphaagent-0n6c.onrender.com/
+- **GitHub Repository:** https://github.com/krishnahanda484/AlphaAgent
 
 > Replace the deployment URL and repository link with your own before submission.
 
