@@ -283,3 +283,11 @@ render.yaml             ← Render.com one-click deployment config
 railway.toml            ← Railway.app deployment config
 scripts/build-prod.sh   ← Manual production build script
 ```
+
+---
+
+## BONUS: AI / LLM Chat Session Transcript
+
+As mandated by the assignment to build this project using an AI/LLM, the complete chat session transcript is included in this repository. 
+
+Please see the **`LLM_TRANSCRIPT.md`** file located in the root of the project to view the full log of my thought process, architectural discussions, and iterative development with the LLM.
