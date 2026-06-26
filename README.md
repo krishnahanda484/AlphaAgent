@@ -6,6 +6,28 @@
 
 ## Overview
 
+## Live Demo
+
+- **Application:** https://your-deployment-url.onrender.com
+- **GitHub Repository:** https://github.com/your-username/your-repository
+
+> Replace the deployment URL and repository link with your own before submission.
+
+## Features
+
+- AI-powered investment research
+- Company validation and ticker resolution
+- Live market data using Yahoo Finance
+- Real-time news sentiment analysis
+- LangGraph-based workflow orchestration
+- GPT-4o powered investment reasoning
+- Streaming progress updates using Server-Sent Events
+- Investment score breakdown
+- Company profile dashboard
+- Historical price chart
+
+## Overview
+
 AlphaAgent is an autonomous AI investment research agent. Enter any public company name and the agent:
 
 1. **Validates & resolves** the company — confirms it's real and finds its stock ticker via Yahoo Finance + GPT-4o
@@ -153,19 +175,21 @@ onerror            → ignored if "complete" already received (prevents false er
 
 ## Key Decisions & Trade-offs
 
-### Single structured LLM call vs multi-step tool-calling agent
+### Single LLM Analysis
 **Chose**: One GPT-4o call per analysis, receiving a fully structured JSON response.  
 **Why**: More reliable (no hallucinated tool calls), faster (~20–35s vs 60s+), and deterministic output format. The real data fetching is already handled by dedicated LangGraph nodes.  
 **Trade-off**: Cannot dynamically decide to fetch additional sources mid-reasoning.
 
 ### Yahoo Finance for all financial data
 **Chose**: `yahoo-finance2` for real market data; GPT-4o only does *reasoning*, not *data recall*.  
-**Why**: LLM training data is months stale. Real P/E, margins, revenue, and FCF make the analysis credible and verifiable. Interviewers can cross-check numbers on Yahoo Finance.  
+**Why**: LLM training data is months stale. Real P/E, margins, revenue, and FCF make the analysis credible and verifiable.   
 **Trade-off**: yahoo-finance2 is an unofficial API; it can fail for small/private/international tickers.
 
-### Server-Sent Events (SSE) over WebSockets
-**Chose**: SSE for live progress streaming.  
-**Why**: SSE is one-directional (server → client), trivially implemented in Express, works through proxies without extra config, and is natively supported by browsers.
+### Server-Sent Events (SSE)
+
+**Choice:** Server-Sent Events (SSE)
+
+**Reason:** The application only requires one-way communication from the server to the client for streaming research progress. SSE is lightweight, easy to implement, and well suited for this use case.
 
 ### LangGraph parallel nodes
 **Chose**: `fetchMarketData` and `fetchNews` run in parallel, not sequentially.  
@@ -183,50 +207,59 @@ onerror            → ignored if "complete" already received (prevents false er
 
 ---
 
+## Assumptions
+
+- The application analyzes publicly traded companies.
+- Yahoo Finance is the primary source for market and financial data.
+- GPT-4o is used for reasoning and recommendation generation.
+- The recommendation is for educational purposes and should not be considered financial advice.
+
+## Limitations
+
+- Private companies cannot be analyzed.
+- Data availability depends on Yahoo Finance.
+- News coverage varies across companies.
+- The generated recommendation should not replace professional financial advice.
+
+## Testing
+
+The application was manually tested using companies such as Apple, Microsoft, NVIDIA, Reliance Industries, and Tata Motors. The generated results were verified against publicly available market information.
+
+---
+
 ## Example Runs
 
 ### Apple (AAPL)
+
 ```
-Verdict:    INVEST
-Confidence: 82%
+Verdict: INVEST
 
-Investment Scores:
-  Financials: 91  |  Valuation: 72  |  Growth: 78
-  Risk:       85  |  News:      80  |  Sentiment: 84
+Reason:
+Apple demonstrates strong profitability, consistent cash flow generation, healthy margins, and positive long-term growth potential. Recent news sentiment is also positive, resulting in a high-confidence investment recommendation.
 
-Key Data (live):  Price $213.49  |  P/E 32.1x  |  Net Margin 26.4%
-                  FCF $108B      |  Rev Growth +5.1%  |  Dividend 0.44%
-
-Summary: Apple's $108B annual free cash flow and 26.4% net margin rank it among the most
-profitable businesses globally. The Services segment growing at 14% YoY at ~70% gross
-margin structurally improves the blended margin profile over time.
+Generated using live market data at the time of execution.
 ```
 
 ### Reliance Industries (RELIANCE.NS)
+
 ```
-Verdict:    INVEST
-Confidence: 74%
+Verdict: INVEST
 
-Investment Scores:
-  Financials: 78  |  Valuation: 65  |  Growth: 80
-  Risk:       70  |  News:      72  |  Sentiment: 74
+Reason:
+Reliance benefits from diversified business segments, stable financial performance, and long-term growth opportunities across telecom, retail, and energy businesses.
 
-Summary: Reliance's diversified revenue across O2C (~50%), Retail (Jio Mart, ~25%),
-and Telecom (Jio, ~25%) significantly reduces single-sector risk. Jio's 450M+ subscriber
-base and 5G capex position it for long-term data monetisation growth.
+Generated using live market data at the time of execution.
 ```
 
 ### Tata Motors (TTM)
+
 ```
-Verdict:    INVEST
-Confidence: 71%
+Verdict: INVEST
 
-Investment Scores:
-  Financials: 74  |  Valuation: 68  |  Growth: 82
-  Risk:       62  |  News:      70  |  Sentiment: 71
+Reason:
+The analysis highlights improving profitability, recovery in the JLR business, and continued growth in the automotive sector. The final recommendation is based on the latest available market data.
 
-Key Data:  Debt/Equity 1.5 (industry avg 2.0)  |  EV sales 20% of India volume
-           FCF +25% YoY  |  JLR margin recovery driving consolidated profitability
+Generated using live market data at the time of execution.
 ```
 
 ---
