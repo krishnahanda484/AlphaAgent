@@ -5,8 +5,8 @@ services:
     region: oregon
     plan: free
     buildCommand: |
-      npm install -g pnpm
-      pnpm install --frozen-lockfile
+      corepack enable
+      pnpm install --no-frozen-lockfile
       pnpm --filter @workspace/investment-agent run build
       mkdir -p artifacts/api-server/public
       cp -r artifacts/investment-agent/dist/* artifacts/api-server/public/
