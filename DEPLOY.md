@@ -36,6 +36,7 @@ corepack enable
 pnpm install --no-frozen-lockfile
 pnpm --filter @workspace/investment-agent run build    # Vite builds React frontend
 pnpm --filter @workspace/api-server run build          # esbuild bundles Express server + copies frontend
+pnpm --filter @workspace/db run push                   # Pushes the database schema
 ```
 
 The API server build script (`artifacts/api-server/build.mjs`) automatically:
@@ -56,21 +57,14 @@ The Express server:
 
 ## Database Setup
 
-Before the app works, you need to push the database schema:
-
-```bash
-# Locally, with DATABASE_URL set:
-pnpm --filter @workspace/db run push
-```
-
-Or if using Render's managed Postgres, you can run this via the Render Shell.
+The database schema is automatically pushed to your PostgreSQL database during the build phase. You do not need to run migrations manually, provided `DATABASE_URL` is set in the Render dashboard.
 
 ## Manual Deploy (Without Blueprint)
 
 1. Create a **Web Service** on Render
 2. Connect your GitHub repo
 3. Set:
-   - **Build Command**: `corepack enable && pnpm install --no-frozen-lockfile && pnpm --filter @workspace/investment-agent run build && pnpm --filter @workspace/api-server run build`
+   - **Build Command**: `corepack enable && pnpm install --no-frozen-lockfile && pnpm --filter @workspace/investment-agent run build && pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/db run push`
    - **Start Command**: `node artifacts/api-server/dist/index.mjs`
    - **Node Version**: 22+ (set `NODE_VERSION=22` in env vars if needed)
 4. Add all required environment variables
