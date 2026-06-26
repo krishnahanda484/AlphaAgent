@@ -1,0 +1,212 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: AI Investment Research Agent API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: research
+    description: Investment research operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /research:
+    get:
+      operationId: listResearch
+      tags: [research]
+      summary: List all research sessions
+      responses:
+        "200":
+          description: List of research sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ResearchSession"
+
+    post:
+      operationId: startResearch
+      tags: [research]
+      summary: Start a new investment research session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResearchInput"
+      responses:
+        "201":
+          description: Research session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResearchSession"
+
+  /research/{id}:
+    get:
+      operationId: getResearch
+      tags: [research]
+      summary: Get a research session by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Research session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResearchSession"
+        "404":
+          description: Not found
+
+    delete:
+      operationId: deleteResearch
+      tags: [research]
+      summary: Delete a research session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /research/{id}/stream:
+    get:
+      operationId: streamResearch
+      tags: [research]
+      summary: Stream research progress via SSE
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: SSE stream of research progress
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  /research/stats:
+    get:
+      operationId: getResearchStats
+      tags: [research]
+      summary: Get aggregate stats across all sessions
+      responses:
+        "200":
+          description: Research statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResearchStats"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ResearchInput:
+      type: object
+      required:
+        - company
+      properties:
+        company:
+          type: string
+          minLength: 1
+          description: Company name to research
+
+    ResearchSession:
+      type: object
+      required:
+        - id
+        - company
+        - status
+        - createdAt
+      properties:
+        id:
+          type: integer
+        company:
+          type: string
+        status:
+          type: string
+          description: "pending | running | completed | failed"
+        verdict:
+          type: ["string", "null"]
+          description: "INVEST | PASS | null"
+        summary:
+          type: ["string", "null"]
+        reasoning:
+          type: ["string", "null"]
+        bulletsFor:
+          type: ["string", "null"]
+          description: JSON array of bullet points supporting invest
+        bulletsAgainst:
+          type: ["string", "null"]
+          description: JSON array of bullet points supporting pass
+        financialData:
+          type: ["string", "null"]
+          description: JSON blob of key financial metrics
+        newsHeadlines:
+          type: ["string", "null"]
+          description: JSON array of recent news items
+        confidenceScore:
+          type: ["number", "null"]
+          description: 0-100 confidence in the verdict
+        createdAt:
+          type: string
+        completedAt:
+          type: ["string", "null"]
+
+    ResearchStats:
+      type: object
+      required:
+        - total
+        - completed
+        - investCount
+        - passCount
+        - avgConfidence
+      properties:
+        total:
+          type: integer
+        completed:
+          type: integer
+        investCount:
+          type: integer
+        passCount:
+          type: integer
+        avgConfidence:
+          type: ["number", "null"]

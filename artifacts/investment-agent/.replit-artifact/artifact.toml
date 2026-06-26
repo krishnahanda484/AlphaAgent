@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "AI Investment Research Agent"
+version = "1.0.0"
+id = "artifacts/investment-agent"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 20774
+
+[services.development]
+run = "pnpm --filter @workspace/investment-agent run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/investment-agent", "run", "build" ]
+publicDir = "artifacts/investment-agent/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20774"
+BASE_PATH = "/"

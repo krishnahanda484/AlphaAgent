@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: alphaagent
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: |
+      npm install -g pnpm
+      pnpm install --frozen-lockfile
+      pnpm --filter @workspace/investment-agent run build
+      mkdir -p artifacts/api-server/public
+      cp -r artifacts/investment-agent/dist/* artifacts/api-server/public/
+      pnpm --filter @workspace/api-server run build
+    startCommand: node artifacts/api-server/dist/index.mjs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
