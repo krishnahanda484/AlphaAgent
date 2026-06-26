@@ -37,7 +37,7 @@ app.use("/api", router);
 
 // In production, serve the built React frontend from the dist folder
 if (process.env["NODE_ENV"] === "production") {
-  const frontendDist = path.resolve(__dirname, "../../public");
+  const frontendDist = path.resolve(__dirname, "../public");
   app.use(express.static(frontendDist));
   // SPA fallback: all non-API routes return index.html
   app.get("/{*any}", (_req, res) => {
