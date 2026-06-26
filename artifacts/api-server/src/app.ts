@@ -40,7 +40,7 @@ if (process.env["NODE_ENV"] === "production") {
   const frontendDist = path.resolve(__dirname, "../../public");
   app.use(express.static(frontendDist));
   // SPA fallback: all non-API routes return index.html
-  app.get("*", (_req, res) => {
+  app.get("/{*any}", (_req, res) => {
     res.sendFile(path.join(frontendDist, "index.html"));
   });
 }
