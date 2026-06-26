@@ -3,12 +3,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { rm } from "node:fs/promises";
+import { rm, cp, access } from "node:fs/promises";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
 
 const artifactDir = path.dirname(fileURLToPath(import.meta.url));
+const rootDir = path.resolve(artifactDir, "..", "..");
 
 async function buildAll() {
   const distDir = path.resolve(artifactDir, "dist");
@@ -23,10 +24,6 @@ async function buildAll() {
     outExtension: { ".js": ".mjs" },
     logLevel: "info",
     // Some packages may not be bundleable, so we externalize them, we can add more here as needed.
-    // Some of the packages below may not be imported or installed, but we're adding them in case they are in the future.
-    // Examples of unbundleable packages:
-    // - uses native modules and loads them dynamically (e.g. sharp)
-    // - use path traversal to read files (e.g. @google-cloud/secret-manager loads sibling .proto files)
     external: [
       "*.node",
       "sharp",
@@ -118,6 +115,23 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
     `,
     },
   });
+
+  // After esbuild completes, copy the frontend build output into dist/public/
+  // This must happen AFTER esbuild because esbuild wipes the dist/ folder
+  const frontendDist = path.resolve(rootDir, "artifacts", "investment-agent", "dist");
+  const targetPublic = path.resolve(distDir, "public");
+
+  try {
+    await access(frontendDist);
+    console.log(`Copying frontend build from ${frontendDist} to ${targetPublic}...`);
+    await cp(frontendDist, targetPublic, { recursive: true });
+    console.log("Frontend files copied successfully.");
+  } catch {
+    console.warn(
+      "WARNING: Frontend build output not found at " + frontendDist + ". " +
+      "Make sure to build the frontend (pnpm --filter @workspace/investment-agent run build) before building the API server."
+    );
+  }
 }
 
 buildAll().catch((err) => {

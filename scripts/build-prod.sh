@@ -3,16 +3,12 @@
 set -e
 
 echo "📦 Installing dependencies..."
-pnpm install --frozen-lockfile
+pnpm install --no-frozen-lockfile
 
 echo "⚛️  Building React frontend..."
 pnpm --filter @workspace/investment-agent run build
 
-echo "📂 Copying frontend dist to API server public folder..."
-mkdir -p artifacts/api-server/public
-cp -r artifacts/investment-agent/dist/* artifacts/api-server/public/
-
-echo "🔨 Building API server..."
+echo "🔨 Building API server (includes frontend copy)..."
 pnpm --filter @workspace/api-server run build
 
 echo "✅ Production build complete!"
