@@ -61,8 +61,8 @@ async function buildAll() {
       "@azure/*",
       "@opentelemetry/*",
       "@google-cloud/*",
-      "@google/*",
-      "googleapis",
+      // Note: @google/generative-ai must be bundled (not externalized) for LangChain Google GenAI
+      // "@google/*" is intentionally NOT in this list
       "firebase-admin",
       "@parcel/watcher",
       "@sentry/profiling-node",
