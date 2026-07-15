@@ -155,7 +155,7 @@ export default function Home() {
             </div>
             <div>
               <h1 className="font-extrabold text-foreground leading-none tracking-tight">AlphaAgent</h1>
-              <p className="text-xs text-muted-foreground hidden sm:block">AI Investment Research · GPT-4o + Yahoo Finance</p>
+              <p className="text-xs text-muted-foreground hidden sm:block">AI Investment Research · Gemini + Yahoo Finance</p>
             </div>
           </div>
           <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
@@ -285,7 +285,7 @@ export default function Home() {
       </main>
 
       <footer className="border-t border-border mt-16 py-6 text-center text-xs text-muted-foreground">
-        AlphaAgent · Built with LangGraph + GPT-4o + Yahoo Finance · Live market data
+        AlphaAgent · Built with LangGraph + Gemini + Yahoo Finance · Live market data
       </footer>
     </div>
   );

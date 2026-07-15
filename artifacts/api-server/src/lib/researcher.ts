@@ -1,4 +1,4 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { StateGraph, END, START, Annotation } from "@langchain/langgraph";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { logger } from "./logger";
@@ -95,10 +95,10 @@ type State = typeof ResearchState.State;
 // ── LLM ───────────────────────────────────────────────────────────────────────
 
 function getLLM() {
-  return new ChatOpenAI({
-    model: "gpt-4o",
+  return new ChatGoogleGenerativeAI({
+    model: "gemini-2.5-flash",
     temperature: 0.3,
-    openAIApiKey: process.env.OPENAI_API_KEY,
+    apiKey: process.env.GOOGLE_API_KEY,
   });
 }
 

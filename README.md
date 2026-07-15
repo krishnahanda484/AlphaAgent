@@ -30,10 +30,10 @@
 
 AlphaAgent is an autonomous AI investment research agent. Enter any public company name and the agent:
 
-1. **Validates & resolves** the company — confirms it's real and finds its stock ticker via Yahoo Finance + GPT-4o
+1. **Validates & resolves** the company — confirms it's real and finds its stock ticker via Yahoo Finance + Gemini 2.5 Flash
 2. **Fetches live market data** — price, P/E, margins, FCF, debt, EPS, 52-week range, volume and more from Yahoo Finance
-3. **Scans real news** — pulls recent headlines with GPT-4o sentiment classification (positive / negative / neutral)
-4. **Runs a LangGraph pipeline** — 4 nodes with parallel data fetching, converging at a GPT-4o analysis node
+3. **Scans real news** — pulls recent headlines with Gemini sentiment classification (positive / negative / neutral)
+4. **Runs a LangGraph pipeline** — 4 nodes with parallel data fetching, converging at a Gemini 2.5 Flash analysis node
 5. **Delivers a structured verdict** — **INVEST** or **PASS** with a confidence score, investment sub-scores (Financials / Valuation / Growth / Risk / News / Sentiment), confidence breakdown, bull & bear case, a 5-paragraph analyst thesis, a 90-day price chart, and a company profile card
 
 The full pipeline streams live to the UI via Server-Sent Events so you watch each step complete in real time.
@@ -46,7 +46,7 @@ The full pipeline streams live to the UI via Server-Sent Events so you watch eac
 - Node.js 18+
 - pnpm (`npm install -g pnpm`)
 - PostgreSQL database
-- OpenAI API key (GPT-4o access)
+- Google Gemini API key
 
 ### 1. Install dependencies
 ```bash
@@ -57,7 +57,7 @@ pnpm install
 Copy `.env.example` or create a `.env` file:
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/alphaagent
-OPENAI_API_KEY=sk-...
+GOOGLE_API_KEY=AIza...
 SESSION_SECRET=any-random-string
 PORT=8080
 ```
@@ -88,21 +88,21 @@ Open the URL printed by Vite (e.g. `http://localhost:5173`).
 3. Render auto-detects `render.yaml` — review and confirm
 4. Add environment variables in the dashboard:
    - `DATABASE_URL` — use Render's free managed Postgres add-on
-   - `OPENAI_API_KEY`
+   - `GOOGLE_API_KEY`
 5. Click **Deploy** — build and start happen automatically
 
 ### Railway
 1. Push this repo to GitHub
 2. Go to [railway.app](https://railway.app) → New Project → from GitHub repo
 3. Add a **PostgreSQL** plugin — Railway sets `DATABASE_URL` automatically
-4. Add `OPENAI_API_KEY` in the Variables tab
+4. Add `GOOGLE_API_KEY` in the Variables tab
 5. Railway reads `railway.toml` for build and start commands
 6. Click **Deploy**
 
 ### Manual build (any platform)
 ```bash
 bash scripts/build-prod.sh
-NODE_ENV=production PORT=8080 DATABASE_URL=... OPENAI_API_KEY=... node artifacts/api-server/dist/index.mjs
+NODE_ENV=production PORT=8080 DATABASE_URL=... GOOGLE_API_KEY=... node artifacts/api-server/dist/index.mjs
 ```
 
 ---
@@ -126,7 +126,7 @@ User Input (company name)
   ║                                           ║
   ║  Node 1: resolveTicker                    ║
   ║    → Yahoo Finance ticker search          ║
-  ║    → GPT-4o validates company is real     ║
+  ║    → Gemini validates company is real     ║
   ║    → resolves stock ticker symbol         ║
   ║         │                                 ║
   ║   parallel fan-out                        ║
@@ -141,7 +141,7 @@ User Input (company name)
   ║   converge                                ║
   ║         ▼                                 ║
   ║  Node 4: analyzeAndVerdict                ║
-  ║    → GPT-4o reads ALL real data           ║
+  ║    → Gemini reads ALL real data           ║
   ║    → returns structured JSON verdict      ║
   ╚═══════════════════════════════════════════╝
         │
@@ -164,7 +164,7 @@ onerror            → ignored if "complete" already received (prevents false er
 | Frontend | React 18, Vite, Tailwind CSS, TanStack Query v5, Recharts, wouter |
 | Backend | Express 5, Node.js 24 |
 | AI Orchestration | LangGraph.js (StateGraph, parallel edges) |
-| LLM | OpenAI GPT-4o via LangChain.js |
+| LLM | Google Gemini 2.5 Flash via LangChain.js |
 | Market Data | yahoo-finance2 (live prices, financials, news, company profile) |
 | Database | PostgreSQL + Drizzle ORM |
 | Streaming | Server-Sent Events (SSE) |
@@ -175,14 +175,14 @@ onerror            → ignored if "complete" already received (prevents false er
 
 ## Key Decisions & Trade-offs
 
-### Single LLM Analysis
-**Chose**: One GPT-4o call per analysis, receiving a fully structured JSON response.  
+### Single structured LLM call vs multi-step tool-calling agent
+**Chose**: One Gemini 2.5 Flash call per analysis, receiving a fully structured JSON response.  
 **Why**: More reliable (no hallucinated tool calls), faster (~20–35s vs 60s+), and deterministic output format. The real data fetching is already handled by dedicated LangGraph nodes.  
 **Trade-off**: Cannot dynamically decide to fetch additional sources mid-reasoning.
 
 ### Yahoo Finance for all financial data
-**Chose**: `yahoo-finance2` for real market data; GPT-4o only does *reasoning*, not *data recall*.  
-**Why**: LLM training data is months stale. Real P/E, margins, revenue, and FCF make the analysis credible and verifiable.   
+**Chose**: `yahoo-finance2` for real market data; Gemini only does *reasoning*, not *data recall*.  
+**Why**: LLM training data is months stale. Real P/E, margins, revenue, and FCF make the analysis credible and verifiable. Interviewers can cross-check numbers on Yahoo Finance.  
 **Trade-off**: yahoo-finance2 is an unofficial API; it can fail for small/private/international tickers.
 
 ### Server-Sent Events (SSE)
@@ -282,7 +282,7 @@ Generated using live market data at the time of execution.
 | Variable | Required | Description |
 |---|---|---|
 | `DATABASE_URL` | ✅ | PostgreSQL connection string |
-| `OPENAI_API_KEY` | ✅ | OpenAI API key (GPT-4o access required) |
+| `GOOGLE_API_KEY` | ✅ | Google Gemini API key |
 | `PORT` | ✅ | Port for the Express server (8080 in dev) |
 | `SESSION_SECRET` | Optional | Secret for session signing |
 | `NODE_ENV` | Optional | Set to `production` to serve the React frontend as static files |
