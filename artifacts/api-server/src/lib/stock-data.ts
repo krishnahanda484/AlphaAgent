@@ -32,7 +32,6 @@ export interface StockQuote {
   beta: number | null;
   enterpriseValue: number | null;
   enterpriseToEbitda: number | null;
-  // Extended company profile fields
   exchange: string | null;
   ceo: string | null;
   hq: string | null;
@@ -89,7 +88,6 @@ export async function fetchStockQuote(ticker: string): Promise<StockQuote | null
     const keyStats = s?.defaultKeyStatistics;
     const profile = s?.assetProfile;
 
-    // Extract CEO from officers list
     let ceo: string | null = null;
     if (profile && "companyOfficers" in profile && Array.isArray((profile as Record<string, unknown>).companyOfficers)) {
       const officers = (profile as Record<string, { title?: string; name?: string }[]>).companyOfficers;
@@ -99,7 +97,6 @@ export async function fetchStockQuote(ticker: string): Promise<StockQuote | null
       if (ceoOfficer?.name) ceo = ceoOfficer.name;
     }
 
-    // Build HQ string
     let hq: string | null = null;
     if (profile) {
       const p = profile as Record<string, string | undefined>;
